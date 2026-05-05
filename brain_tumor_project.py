@@ -3,7 +3,7 @@
 # CELL 1: Mount Google Drive
 # ============================================================
 from google.colab import drive
-drive.mount('/content/drive')
+drive.mount('/content/drive', force_remount=True)
 
 # ============================================================
 # CELL 2: Load Dataset from Google Drive
@@ -16,8 +16,8 @@ drive.mount('/content/drive')
 # ============================================================
 import zipfile, os
 
-# ⬇️  CHANGE THIS to the actual path of your zip in Google Drive
-DRIVE_ZIP_PATH = '/content/drive/MyDrive/brain_tumor_dataset.zip'
+# ⬇️  This is your exact file path based on what you uploaded
+DRIVE_ZIP_PATH = '/content/drive/MyDrive/deep-learning/archive.zip'
 
 EXTRACT_PATH = '/content/brain_tumor_dataset'
 os.makedirs(EXTRACT_PATH, exist_ok=True)
@@ -62,6 +62,11 @@ BATCH_SIZE   = 32
 EPOCHS       = 15
 LEARNING_RATE= 0.0001
 SEED         = 42
+
+# ---- OUTPUT FOLDER (saves all charts to Drive — survives session resets) ----
+OUTPUT_DIR = '/content/drive/MyDrive/deep-learning/project_outputs'
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+print(f"Charts will be saved to: {OUTPUT_DIR}")
 
 print("TensorFlow version:", tf.__version__)
 print("GPU available:", tf.config.list_physical_devices('GPU'))
@@ -138,7 +143,7 @@ for i, ax in enumerate(axes.flatten()):
     ax.set_title(CLASS_NAMES[np.argmax(labels[i])])
     ax.axis('off')
 plt.tight_layout()
-plt.savefig('sample_images.png', dpi=150)
+plt.savefig(f'{OUTPUT_DIR}/sample_images.png', dpi=150)
 plt.show()
 
 # ============================================================
@@ -229,7 +234,7 @@ sns.heatmap(cm_svm, annot=True, fmt='d', cmap='Blues',
 plt.title('Confusion Matrix — Approach 1 (SVM)', fontsize=14)
 plt.ylabel('True Label'); plt.xlabel('Predicted Label')
 plt.tight_layout()
-plt.savefig('cm_svm.png', dpi=150)
+plt.savefig(f'{OUTPUT_DIR}/cm_svm.png', dpi=150)
 plt.show()
 
 # ============================================================
@@ -322,7 +327,7 @@ ax2.legend(); ax2.grid(True)
 
 plt.suptitle('Approach 2: End-to-End ResNet50 Learning Curves', fontsize=14)
 plt.tight_layout()
-plt.savefig('learning_curves.png', dpi=150)
+plt.savefig(f'{OUTPUT_DIR}/learning_curves.png', dpi=150)
 plt.show()
 
 # ============================================================
@@ -360,7 +365,7 @@ sns.heatmap(cm_e2e, annot=True, fmt='d', cmap='Greens',
 plt.title('Confusion Matrix — Approach 2 (End-to-End)', fontsize=14)
 plt.ylabel('True Label'); plt.xlabel('Predicted Label')
 plt.tight_layout()
-plt.savefig('cm_e2e.png', dpi=150)
+plt.savefig(f'{OUTPUT_DIR}/cm_e2e.png', dpi=150)
 plt.show()
 
 # ============================================================
@@ -397,7 +402,7 @@ for bar in bars2:
             f'{bar.get_height():.3f}', ha='center', va='bottom', fontsize=9)
 
 plt.tight_layout()
-plt.savefig('comparison_bar_chart.png', dpi=150)
+plt.savefig(f'{OUTPUT_DIR}/comparison_bar_chart.png', dpi=150)
 plt.show()
 
 # ============================================================
@@ -415,7 +420,7 @@ for bar in bars:
             f'{bar.get_height():.1f}s', ha='center', va='bottom', fontsize=11)
 ax.grid(axis='y', alpha=0.3)
 plt.tight_layout()
-plt.savefig('training_time_comparison.png', dpi=150)
+plt.savefig(f'{OUTPUT_DIR}/training_time_comparison.png', dpi=150)
 plt.show()
 
 # ============================================================
@@ -462,12 +467,11 @@ print("-"*60)
 print(f"{'Train Time (s)':<20} {svm_train_time:<22.2f} {e2e_train_time:.2f}")
 print("="*60)
 
-# Save all output charts reminder
-print("\n✅ Saved charts:")
+print(f"\n✅ All charts saved to Google Drive: {OUTPUT_DIR}")
 print("  - sample_images.png")
 print("  - cm_svm.png")
 print("  - cm_e2e.png")
 print("  - learning_curves.png")
 print("  - comparison_bar_chart.png")
 print("  - training_time_comparison.png")
-print("\nDownload them from the Colab Files panel (left sidebar)")
+print("\nOpen your Google Drive → deep-learning → project_outputs to find them!")
