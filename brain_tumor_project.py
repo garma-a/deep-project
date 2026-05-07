@@ -45,6 +45,7 @@ from sklearn.metrics import (accuracy_score, precision_score,
 
 import tensorflow as tf
 from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.applications.resnet50 import preprocess_input
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import layers, models, optimizers
 from tensorflow.keras.callbacks import EarlyStopping
@@ -59,7 +60,7 @@ warnings.filterwarnings('ignore')
 DATASET_PATH = '/content/brain_tumor_dataset'
 IMG_SIZE     = (224, 224)
 BATCH_SIZE   = 32
-EPOCHS       = 15
+EPOCHS       = 25
 LEARNING_RATE= 0.0001
 SEED         = 42
 
@@ -88,17 +89,20 @@ for root, dirs, files_ in os.walk(DATASET_PATH):
 # ============================================================
 # Training augmentation (justified: MRI datasets are small, augmentation
 # simulates different patient positions inside the scanner)
+# NOTE: preprocess_input applies ResNet50's exact ImageNet channel-wise
+# mean subtraction & scaling — must match how the model was originally trained.
 train_datagen = ImageDataGenerator(
-    rescale=1./255,           # Pixel normalization [0,1]
+    preprocessing_function=preprocess_input,  # ResNet50-specific preprocessing
     rotation_range=15,        # Slight rotation (scanner tilt)
-    horizontal_flip=True,     # Tumors appear on either hemisphere
+    horizontal_flip=False,    # DISABLED: left/right orientation matters in MRI
     zoom_range=0.1,           # Minor zoom variation
     width_shift_range=0.1,
     height_shift_range=0.1,
     validation_split=0.2      # 80% train, 20% validation
 )
 
-test_datagen = ImageDataGenerator(rescale=1./255)
+# No augmentation on test set — only apply the same preprocessing
+test_datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
 
 # Detect structure: flat (yes/no) or split (Training/Testing)
 subdirs = os.listdir(DATASET_PATH)
@@ -275,9 +279,11 @@ history_p1 = e2e_model.fit(
     epochs=5, callbacks=[early_stop], verbose=1
 )
 
-# ---- PHASE 2: Unfreeze top 20 ResNet50 layers ----
-print("\n--- Phase 2: Fine-Tuning (top 20 ResNet layers unfrozen) ---")
-for layer in base_e2e.layers[-20:]:
+# ---- PHASE 2: Unfreeze top 50 ResNet50 layers ----
+# ResNet50 is deep; 50 unfrozen layers allows the network to adapt its
+# mid-level and high-level feature maps to MRI-specific patterns.
+print("\n--- Phase 2: Fine-Tuning (top 50 ResNet layers unfrozen) ---")
+for layer in base_e2e.layers[-50:]:
     layer.trainable = True
 
 # Use a lower learning rate for fine-tuning to avoid destroying learned weights
@@ -447,7 +453,7 @@ hp_rows = [
     ('Feature Scaling',    'StandardScaler',         'N/A'),
     ('Dropout',            'N/A',                    '0.5'),
     ('Early Stopping',     'N/A',                    'patience=4'),
-    ('Unfrozen Layers',    '0 (all frozen)',          'Top 20 ResNet layers'),
+    ('Unfrozen Layers',    '0 (all frozen)',          'Top 50 ResNet layers'),
 ]
 for row in hp_rows:
     print(f"{row[0]:<30} {row[1]:<22} {row[2]}")
