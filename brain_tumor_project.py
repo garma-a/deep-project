@@ -8,12 +8,6 @@ drive.mount('/content/drive', force_remount=True)
 # ============================================================
 # CELL 2: Load Dataset from Google Drive
 # ============================================================
-# Since you already uploaded your zip to Google Drive:
-#   1. Cell 1 must have run first (Drive is mounted)
-#   2. Find your zip path in Drive: open the Files panel on the left,
-#      navigate to MyDrive and copy the path of your zip file.
-#   3. Paste it below as DRIVE_ZIP_PATH
-# ============================================================
 import zipfile, os
 
 # ⬇️  This is your exact file path based on what you uploaded
@@ -52,11 +46,6 @@ from tensorflow.keras.callbacks import EarlyStopping
 
 warnings.filterwarnings('ignore')
 
-# ---- CONFIGURATION ----
-# Update DATASET_PATH to match your extracted folder structure.
-# The folder should contain subfolders, one per class.
-# e.g.  /content/brain_tumor_dataset/yes/  and  /content/brain_tumor_dataset/no/
-# OR    /content/brain_tumor_dataset/Training/  and  /content/brain_tumor_dataset/Testing/
 DATASET_PATH = '/content/brain_tumor_dataset'
 IMG_SIZE     = (224, 224)
 BATCH_SIZE   = 32
@@ -64,7 +53,6 @@ EPOCHS       = 25
 LEARNING_RATE= 0.0001
 SEED         = 42
 
-# ---- OUTPUT FOLDER (saves all charts to Drive — survives session resets) ----
 OUTPUT_DIR = '/content/drive/MyDrive/deep-learning/project_outputs'
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 print(f"Charts will be saved to: {OUTPUT_DIR}")
